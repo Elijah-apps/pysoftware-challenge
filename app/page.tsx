@@ -72,96 +72,168 @@ const HomePage: React.FC = () => {
   );
 
   return (
-    <div className="container">
+    <div className="container-fluid px-0">
+      {/* External Stylesheets */}
       <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css"
         rel="stylesheet"
-        integrity="sha384-KyZXEAg3QhqLMpG8r+Knujsl5+5hb7x2l5xtnpwJQEEjtVfFb/c2/5A7PjVNDHnA"
-        crossOrigin="anonymous"
       />
+      <link
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+        rel="stylesheet"
+      />
+      
+      {/* Custom Inline Styles */}
+      <style>{`
+        body {
+          background-color: #f4f6f9;
+          font-family: 'Inter', sans-serif;
+        }
+        .navbar {
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        }
+        .navbar-brand {
+          color: white !important;
+          font-weight: bold;
+          font-size: 1.5rem;
+        }
+        .nav-link {
+          color: rgba(255,255,255,0.8) !important;
+          transition: color 0.3s ease;
+        }
+        .nav-link:hover {
+          color: white !important;
+        }
+        .table-container {
+          background-color: white;
+          border-radius: 8px;
+          box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+          padding: 20px;
+          margin-top: 20px;
+        }
+        .table {
+          margin-bottom: 0;
+        }
+        .table thead {
+          background-color: #f8f9fa;
+        }
+        .search-container {
+          max-width: 400px;
+          margin: 0 auto 20px;
+        }
+        .pagination-container {
+          display: flex;
+          justify-content: space-between;
+          margin-top: 20px;
+        }
+      `}</style>
 
-      <nav className="navbar navbar-expand-lg navbar-light bg-light">
-        <a className="navbar-brand" href="#">Pysoftware</a>
-        <button
-          className="navbar-toggler"
-          type="button"
-          data-toggle="collapse"
-          data-target="#navbarNav"
-          aria-controls="navbarNav"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span className="navbar-toggler-icon"></span>
-        </button>
-        <div className="collapse navbar-collapse" id="navbarNav">
-          <ul className="navbar-nav">
-            {menuItems.map((item) => (
-              <li className="nav-item" key={item.id}>
-                <a className="nav-link" href={item.href}>{item.menu_item}</a>
-              </li>
-            ))}
-          </ul>
+      {/* Navbar */}
+      <nav className="navbar navbar-expand-lg navbar-dark px-4">
+        <div className="container-fluid">
+          <a className="navbar-brand" href="#">
+            <i className="fas fa-code mr-2"></i> Pysoftware
+          </a>
+          <button 
+            className="navbar-toggler" 
+            type="button" 
+            data-bs-toggle="collapse" 
+            data-bs-target="#navbarNav"
+          >
+            <span className="navbar-toggler-icon"></span>
+          </button>
+          <div className="collapse navbar-collapse" id="navbarNav">
+            <ul className="navbar-nav ms-auto">
+              {menuItems.map((item) => (
+                <li className="nav-item" key={item.id}>
+                  <a className="nav-link" href={item.href}>
+                    {item.menu_item}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </nav>
 
-      <div className="mt-4">
-        <h1>Address List</h1>
-        <input
-          type="text"
-          className="form-control mb-3"
-          placeholder="Search by street name"
-          value={searchQuery}
-          onChange={handleSearch}
-        />
+      {/* Main Content */}
+      <div className="container mt-4">
+        <div className="table-container">
+          <h1 className="mb-4 text-center">
+            <i className="fas fa-address-book mr-2"></i> Address List
+          </h1>
 
-        <table className="table table-bordered">
-          <thead>
-            <tr>
-              <th>First Name</th>
-              <th>Last Name</th>
-              <th>Street</th>
-              <th>Postcode</th>
-              <th>State</th>
-              <th>Country</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredAddresses.map((address) => (
-              <tr key={address.id}>
-                <td>{address.first_name}</td>
-                <td>{address.last_name}</td>
-                <td>{address.street}</td>
-                <td>{address.postcode}</td>
-                <td>{address.state}</td>
-                <td>{address.country}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+          <div className="search-container">
+            <input
+              type="text"
+              className="form-control form-control-lg"
+              placeholder="🔍 Search by street name"
+              value={searchQuery}
+              onChange={handleSearch}
+            />
+          </div>
 
-        <div className="d-flex justify-content-between">
-          <button
-            className="btn btn-primary"
-            onClick={() => {
-              setCurrentPage((prev) => Math.max(prev - 1, 1));
-              fetchAddresses(currentPage - 1);
-            }}
-            disabled={currentPage === 1}
-          >
-            Previous
-          </button>
-          <button
-            className="btn btn-primary"
-            onClick={() => {
-              setCurrentPage((prev) => prev + 1);
-              fetchAddresses(currentPage + 1);
-            }}
-            disabled={currentPage * ITEMS_PER_PAGE >= totalCustomers}
-          >
-            Next
-          </button>
+          <div className="table-responsive">
+            <table className="table table-hover">
+              <thead>
+                <tr>
+                  <th>First Name</th>
+                  <th>Last Name</th>
+                  <th>Street</th>
+                  <th>Postcode</th>
+                  <th>State</th>
+                  <th>Country</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredAddresses.map((address) => (
+                  <tr key={address.id}>
+                    <td>{address.first_name}</td>
+                    <td>{address.last_name}</td>
+                    <td>{address.street}</td>
+                    <td>{address.postcode}</td>
+                    <td>{address.state}</td>
+                    <td>{address.country}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          <div className="pagination-container">
+            <button
+              className="btn btn-outline-primary"
+              onClick={() => {
+                setCurrentPage((prev) => Math.max(prev - 1, 1));
+                fetchAddresses(currentPage - 1);
+              }}
+              disabled={currentPage === 1}
+            >
+              <i className="fas fa-chevron-left mr-2"></i> Previous
+            </button>
+            <button
+              className="btn btn-outline-primary"
+              onClick={() => {
+                setCurrentPage((prev) => prev + 1);
+                fetchAddresses(currentPage + 1);
+              }}
+              disabled={currentPage * ITEMS_PER_PAGE >= totalCustomers}
+            >
+              Next <i className="fas fa-chevron-right ml-2"></i>
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Bootstrap and Popper JS for interactive components */}
+      <script 
+        src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"
+      ></script>
+      <script 
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.min.js"
+      ></script>
     </div>
   );
 };
