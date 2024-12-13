@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, ChangeEvent } from 'react';
+import React, { useState, useEffect, useCallback, ChangeEvent } from 'react';
+import Script from 'next/script';
+import Head from 'next/head';
 
 interface MenuItem {
   id: string;
@@ -27,24 +29,7 @@ const HomePage: React.FC = () => {
 
   const ITEMS_PER_PAGE = 10;
 
-  useEffect(() => {
-    // Fetch menu items
-    fetch('https://pysoftware.com/v1/menu_items')
-      .then((res) => res.json())
-      .then((data: MenuItem[]) => setMenuItems(data))
-      .catch((err) => console.error(err));
-
-    // Fetch total customer numbers
-    fetch('https://pysoftware.com/v1/customer_numbers')
-      .then((res) => res.json())
-      .then((data: number) => setTotalCustomers(data))
-      .catch((err) => console.error(err));
-
-    // Fetch initial addresses
-    fetchAddresses(1);
-  }, []);
-
-  const fetchAddresses = (page: number) => {
+  const fetchAddresses = useCallback((page: number) => {
     const start = (page - 1) * ITEMS_PER_PAGE + 1;
     const end = Math.min(totalCustomers, start + ITEMS_PER_PAGE - 1);
     const promises: Promise<Address | undefined>[] = [];
@@ -61,7 +46,24 @@ const HomePage: React.FC = () => {
     }
 
     Promise.all(promises).then((results) => setAddresses(results.filter(Boolean) as Address[]));
-  };
+  }, [totalCustomers]);
+
+  useEffect(() => {
+    // Fetch menu items
+    fetch('https://pysoftware.com/v1/menu_items')
+      .then((res) => res.json())
+      .then((data: MenuItem[]) => setMenuItems(data))
+      .catch((err) => console.error(err));
+
+    // Fetch total customer numbers
+    fetch('https://pysoftware.com/v1/customer_numbers')
+      .then((res) => res.json())
+      .then((data: number) => {
+        setTotalCustomers(data);
+        fetchAddresses(1);
+      })
+      .catch((err) => console.error(err));
+  }, [fetchAddresses]);
 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -73,18 +75,30 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="container-fluid px-0">
-      {/* External Stylesheets */}
-      <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css"
-        rel="stylesheet"
+      {/* NextJS Head for managing external stylesheets */}
+      <Head>
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+        />
+        <link
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+          rel="stylesheet"
+        />
+      </Head>
+
+      {/* Asynchronous Scripts */}
+      <Script 
+        src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"
+        strategy="afterInteractive"
       />
-      <link
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
-        rel="stylesheet"
+      <Script 
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.min.js"
+        strategy="afterInteractive"
       />
       
       {/* Custom Inline Styles */}
-      <style>{`
+      <style jsx global>{`
         body {
           background-color: #f4f6f9;
           font-family: 'Inter', sans-serif;
@@ -226,14 +240,6 @@ const HomePage: React.FC = () => {
           </div>
         </div>
       </div>
-
-      {/* Bootstrap and Popper JS for interactive components */}
-      <script 
-        src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"
-      ></script>
-      <script 
-        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.min.js"
-      ></script>
     </div>
   );
 };
