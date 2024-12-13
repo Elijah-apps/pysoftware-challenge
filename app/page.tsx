@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, ChangeEvent } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
 
 interface MenuItem {
   id: string;
@@ -74,6 +73,13 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="container">
+      <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+        integrity="sha384-KyZXEAg3QhqLMpG8r+Knujsl5+5hb7x2l5xtnpwJQEEjtVfFb/c2/5A7PjVNDHnA"
+        crossOrigin="anonymous"
+      />
+
       <nav className="navbar navbar-expand-lg navbar-light bg-light">
         <a className="navbar-brand" href="#">Pysoftware</a>
         <button
