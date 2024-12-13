@@ -1,8 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, ChangeEvent } from 'react';
-import Script from 'next/script';
-import Head from 'next/head';
+import React, { useState, useEffect, ChangeEvent } from 'react';
 
 interface MenuItem {
   id: string;
@@ -29,7 +27,24 @@ const HomePage: React.FC = () => {
 
   const ITEMS_PER_PAGE = 10;
 
-  const fetchAddresses = useCallback((page: number) => {
+  useEffect(() => {
+    // Fetch menu items
+    fetch('https://pysoftware.com/v1/menu_items')
+      .then((res) => res.json())
+      .then((data: MenuItem[]) => setMenuItems(data))
+      .catch((err) => console.error(err));
+
+    // Fetch total customer numbers
+    fetch('https://pysoftware.com/v1/customer_numbers')
+      .then((res) => res.json())
+      .then((data: number) => setTotalCustomers(data))
+      .catch((err) => console.error(err));
+
+    // Fetch initial addresses
+    fetchAddresses(1);
+  }, []);
+
+  const fetchAddresses = (page: number) => {
     const start = (page - 1) * ITEMS_PER_PAGE + 1;
     const end = Math.min(totalCustomers, start + ITEMS_PER_PAGE - 1);
     const promises: Promise<Address | undefined>[] = [];
@@ -46,24 +61,7 @@ const HomePage: React.FC = () => {
     }
 
     Promise.all(promises).then((results) => setAddresses(results.filter(Boolean) as Address[]));
-  }, [totalCustomers]);
-
-  useEffect(() => {
-    // Fetch menu items
-    fetch('https://pysoftware.com/v1/menu_items')
-      .then((res) => res.json())
-      .then((data: MenuItem[]) => setMenuItems(data))
-      .catch((err) => console.error(err));
-
-    // Fetch total customer numbers
-    fetch('https://pysoftware.com/v1/customer_numbers')
-      .then((res) => res.json())
-      .then((data: number) => {
-        setTotalCustomers(data);
-        fetchAddresses(1);
-      })
-      .catch((err) => console.error(err));
-  }, [fetchAddresses]);
+  };
 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -75,122 +73,87 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="container-fluid px-0">
-      {/* NextJS Head for managing external stylesheets */}
-      <Head>
-        <link
-          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css"
-          rel="stylesheet"
-        />
-        <link
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
-          rel="stylesheet"
-        />
-      </Head>
-
-      {/* Asynchronous Scripts */}
-      <Script 
-        src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"
-        strategy="afterInteractive"
+      <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+        integrity="sha384-KyZXEAg3QhqLMpG8r+Knujsl5+5hb7x2l5xtnpwJQEEjtVfFb/c2/5A7PjVNDHnA"
+        crossOrigin="anonymous"
       />
-      <Script 
-        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.min.js"
-        strategy="afterInteractive"
-      />
-      
-      {/* Custom Inline Styles */}
-      <style jsx global>{`
+      <style jsx>{`
         body {
-          background-color: #f4f6f9;
-          font-family: 'Inter', sans-serif;
+          background-color: #f8f9fa;
+          font-family: 'Arial', sans-serif;
         }
         .navbar {
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+          background-color: #007bff;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        .navbar-brand {
-          color: white !important;
-          font-weight: bold;
-          font-size: 1.5rem;
+        .navbar-brand, .nav-link {
+          color: #fff !important;
         }
-        .nav-link {
-          color: rgba(255,255,255,0.8) !important;
-          transition: color 0.3s ease;
-        }
-        .nav-link:hover {
-          color: white !important;
+        .navbar-brand:hover, .nav-link:hover {
+          color: #ffc107 !important;
         }
         .table-container {
-          background-color: white;
+          background: #fff;
           border-radius: 8px;
-          box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
           padding: 20px;
           margin-top: 20px;
         }
-        .table {
-          margin-bottom: 0;
+        .search-input {
+          margin-bottom: 20px;
         }
-        .table thead {
-          background-color: #f8f9fa;
+        .btn {
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        .search-container {
-          max-width: 400px;
-          margin: 0 auto 20px;
+        .pagination-btn {
+          background: #007bff;
+          color: #fff;
         }
-        .pagination-container {
-          display: flex;
-          justify-content: space-between;
-          margin-top: 20px;
+        .pagination-btn:hover {
+          background: #0056b3;
+          color: #fff;
         }
       `}</style>
 
-      {/* Navbar */}
-      <nav className="navbar navbar-expand-lg navbar-dark px-4">
-        <div className="container-fluid">
-          <a className="navbar-brand" href="#">
-            <i className="fas fa-code mr-2"></i> Pysoftware
-          </a>
-          <button 
-            className="navbar-toggler" 
-            type="button" 
-            data-bs-toggle="collapse" 
-            data-bs-target="#navbarNav"
-          >
-            <span className="navbar-toggler-icon"></span>
-          </button>
-          <div className="collapse navbar-collapse" id="navbarNav">
-            <ul className="navbar-nav ms-auto">
-              {menuItems.map((item) => (
-                <li className="nav-item" key={item.id}>
-                  <a className="nav-link" href={item.href}>
-                    {item.menu_item}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
+      <nav className="navbar navbar-expand-lg navbar-light">
+        <a className="navbar-brand" href="#">Pysoftware</a>
+        <button
+          className="navbar-toggler"
+          type="button"
+          data-toggle="collapse"
+          data-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span className="navbar-toggler-icon"></span>
+        </button>
+        <div className="collapse navbar-collapse" id="navbarNav">
+          <ul className="navbar-nav">
+            {menuItems.map((item) => (
+              <li className="nav-item" key={item.id}>
+                <a className="nav-link" href={item.href}>{item.menu_item}</a>
+              </li>
+            ))}
+          </ul>
         </div>
       </nav>
 
-      {/* Main Content */}
       <div className="container mt-4">
         <div className="table-container">
-          <h1 className="mb-4 text-center">
-            <i className="fas fa-address-book mr-2"></i> Address List
-          </h1>
-
-          <div className="search-container">
-            <input
-              type="text"
-              className="form-control form-control-lg"
-              placeholder="🔍 Search by street name"
-              value={searchQuery}
-              onChange={handleSearch}
-            />
-          </div>
-
+          <h2 className="text-center">Address List</h2>
+          <input
+            type="text"
+            className="form-control search-input"
+            placeholder="Search by street name"
+            value={searchQuery}
+            onChange={handleSearch}
+          />
           <div className="table-responsive">
-            <table className="table table-hover">
-              <thead>
+            <table className="table table-hover table-striped">
+              <thead className="thead-light">
                 <tr>
                   <th>First Name</th>
                   <th>Last Name</th>
@@ -215,27 +178,26 @@ const HomePage: React.FC = () => {
             </table>
           </div>
 
-          {/* Pagination */}
-          <div className="pagination-container">
+          <div className="d-flex justify-content-between">
             <button
-              className="btn btn-outline-primary"
+              className="btn pagination-btn"
               onClick={() => {
                 setCurrentPage((prev) => Math.max(prev - 1, 1));
                 fetchAddresses(currentPage - 1);
               }}
               disabled={currentPage === 1}
             >
-              <i className="fas fa-chevron-left mr-2"></i> Previous
+              Previous
             </button>
             <button
-              className="btn btn-outline-primary"
+              className="btn pagination-btn"
               onClick={() => {
                 setCurrentPage((prev) => prev + 1);
                 fetchAddresses(currentPage + 1);
               }}
               disabled={currentPage * ITEMS_PER_PAGE >= totalCustomers}
             >
-              Next <i className="fas fa-chevron-right ml-2"></i>
+              Next
             </button>
           </div>
         </div>
